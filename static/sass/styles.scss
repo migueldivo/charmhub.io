@@ -112,6 +112,8 @@ html {
 @include charmhub-p-code-snippet;
 @import "charmhub_resources";
 @include charmhub-resources;
+@import "charmhub_security";
+@include charmhub-security;
 
 
 // Remove table row borders

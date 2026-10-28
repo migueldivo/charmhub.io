@@ -1,3 +1,5 @@
+{% from "partial/_security_seal.html" import security_seal %}
+{% set certification = security_certification(package.name) %}
 <div class="p-charm-header__container">
   <div style="position: relative;">
     <button class="p-button has-icon p-channel-map__button" data-controls="channel-map-versions" aria-controls="channel-map-versions" data-js="channel-map">
@@ -45,6 +47,9 @@
               <tr>
                 <th>Channel</th>
                 <th>Revision</th>
+                {% if certification %}
+                  <th>Maintained until</th>
+                {% endif %}
                 <th>Published</th>
                 {% if package.type == "charm" %}
                   <th>Runs on</th>
@@ -60,7 +65,17 @@
               {% for release, release_data in channel_data.releases.items() %}
               <tr data-channel-map-track="{{ track }}" data-channel-map-channel="{{ channel }}" data-channel-map-version="{{ release_data.version }}" data-channel-map-arch-filter="{% for arch in release_data.architectures %} {{ arch }} {% endfor %}" data-channel-map-base-filter=" {% for channel_base in release_data.channel_bases %} {% for series in channel_base.channels %} {{ channel_base.name }}{{ series }} {% endfor %}{% endfor %}">
                 <td data-heading="Channel">{{ track }}/{{ channel }}</td>
-                <td data-heading="Revision">{{ release_data.revision.revision }}</td>
+                {% set certified_until = certification.channels.get(track ~ "/" ~ channel) if certification else none %}
+                <td data-heading="Revision">
+                  {% if certified_until %}
+                    <span title="Revision {{ release_data.revision.revision }}">{{ security_seal() }}</span>
+                  {% else %}
+                    {{ release_data.revision.revision }}
+                  {% endif %}
+                </td>
+                {% if certification %}
+                  <td data-heading="Maintained until">{{ certified_until or "—" }}</td>
+                {% endif %}
                 <td data-heading="Published">{{ release_data.release_date }}</td>
                 {% if package.type == "charm" %}
                   <td data-heading="Runs on">

@@ -2,6 +2,10 @@ import React from "react";
 
 import type { ICharm } from "../../../../shared/types";
 import { Col, Row } from "@canonical/react-components";
+import {
+  SecuritySeal,
+  getSealStatus,
+} from "../../security/components/SecuritySeal";
 
 interface InterfaceRowProps {
   charm: ICharm;
@@ -33,6 +37,7 @@ export const InterfaceRow = ({ charm }: InterfaceRowProps) => {
   const charmName = getDisplayName(charm);
   const packageLink = `/${charm.package.name}`;
   const channel = getChannel(charm);
+  const sealStatus = getSealStatus(charm.package.name);
   const supportsVm = charm.package.platforms.includes("vm");
   const supportsKubernetes =
     charm.package.platforms.includes("kubernetes") ||
@@ -68,7 +73,13 @@ export const InterfaceRow = ({ charm }: InterfaceRowProps) => {
         <p className="u-text--muted u-no-margin--bottom">{channel}</p>
       </Col>
 
-      <Col size={3}>
+      <Col size={1}>
+        {sealStatus && (
+          <SecuritySeal inProgress={sealStatus === "in-progress"} />
+        )}
+      </Col>
+
+      <Col size={2}>
         <p className="p-integration-row__description u-no-margin--bottom">
           {charm.package.description}
         </p>

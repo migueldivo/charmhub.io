@@ -1,0 +1,9 @@
+{
+ "grafana-k8s": {
+  "channels": {
+   "12.4/stable": "2031",
+   "12.4/candidate": "2030",
+   "12.4/beta": "2028"
+  }
+ }
+}

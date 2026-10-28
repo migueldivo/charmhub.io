@@ -1,4 +1,5 @@
 {%- from 'details/package_header/_publisher_info.html' import publisher_info with context -%}
+{%- from 'partial/_security_seal.html' import security_seal -%}
 
 {%- macro package_icon(
     icon_url,
@@ -28,9 +29,17 @@
     publisher_name,
     username,
     developer_validation,
-    package_type) -%}
+    package_type,
+    has_security_seal=False) -%}
   <div class="p-section--shallow">
+    {% if has_security_seal %}
+    <div class="p-security-seal-heading">
+      <h1 class="u-sv-1" data-live="title">{{ package_title }}</h1>
+      {{ security_seal(label="Security approved") }}
+    </div>
+    {% else %}
     <h1 class="u-sv-1" data-live="title">{{ package_title }}</h1>
+    {% endif %}
     <div class="u-hide--medium u-hide--large">
       {% if publisher_name is not none %}
         {{ publisher_info(publisher_name, username, developer_validation, package_type, image, 'mobile') }}

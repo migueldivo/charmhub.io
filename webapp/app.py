@@ -16,6 +16,10 @@ from webapp.login.views import login
 from webapp.topics.views import topics
 from webapp.publisher.views import publisher
 from webapp.store.views import store
+from webapp.store.security import (
+    get_security_certification,
+    has_security_report,
+)
 from webapp.integrations.views import integrations
 from webapp.search.views import search
 from webapp.solutions.views import solutions
@@ -69,6 +73,8 @@ app.jinja_env.filters["markdown"] = markdown_to_html
 app.jinja_env.filters["humanize_date"] = humanize_date
 app.jinja_env.filters["format_solution_status"] = format_solution_status
 app.jinja_env.globals["form_value"] = get_solution_form_value
+app.jinja_env.globals["has_security_report"] = has_security_report
+app.jinja_env.globals["security_certification"] = get_security_certification
 
 # OpenTelemetry
 UNTRACED_ROUTES = ["/_status", "/static", ".json"]

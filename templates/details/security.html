@@ -1,0 +1,105 @@
+{% set current_tab = "security" %}
+
+{% extends '/details/details_layout.html' %}
+
+{% block details_content %}
+<div class="p-section--shallow p-details-tab__content">
+  <div class="row">
+    <div class="col-4 col-medium-3">
+      <div class="p-card--highlighted p-security-report">
+        <p class="p-text--small-caps u-text--muted">Security report</p>
+        <p class="p-security-report__total">
+          <strong>{{ summary.open }}</strong> vulnerabilities found
+          <span class="p-security-index is-index-{{ summary.index|lower }}" title="Vulnerability index {{ summary.index }}" aria-label="Vulnerability index {{ summary.index }}">{{ summary.index }}</span>
+        </p>
+        <ul class="p-list p-security-report__severities">
+          {% for severity in summary.severities %}
+          <li class="p-security-report__severity">
+            <span class="p-security-report__swatch is-{{ severity.key }}" aria-hidden="true"></span>
+            <a class="p-text--small-caps p-security-report__label" href="?severity={{ severity.key }}&amp;status=open">{{ severity.key }}</a>
+            <span class="p-security-report__count">{{ severity.count }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        <hr class="is-muted">
+        <p class="p-text--small u-no-margin--bottom">
+          <span class="p-text--small-caps u-text--muted">Last scan:</span> {{ report.generated_at }}
+          · revision {{ report.revision }} ({{ report.channel }})
+        </p>
+      </div>
+    </div>
+    <div class="col-8 col-medium-3">
+      <h2 class="p-heading--4">Vulnerability index</h2>
+      <p>
+        The vulnerability index rates how exposed {{ package.store_front["display-name"] }} is through
+        the charm and its dependencies, from <strong>A</strong> (lowest exposure) to <strong>F</strong> (highest).
+        It is based on the open vulnerabilities, weighted by severity: critical 10, high 5, medium 2, low 0.5.
+        Fixed vulnerabilities aren't counted.
+      </p>
+      <ul class="p-inline-list p-security-index-scale" aria-label="Vulnerability index bands">
+        {% for limit, letter in index_bands %}
+        <li class="p-inline-list__item"><span class="p-security-index is-index-{{ letter|lower }}">{{ letter }}</span> &le; {{ limit }}</li>
+        {% endfor %}
+        <li class="p-inline-list__item"><span class="p-security-index is-index-f">F</span> &gt; {{ index_bands[-1][0] }}</li>
+      </ul>
+      <p class="p-text--small">
+        {{ summary.open }} open vulnerabilities across {{ summary.affected_dependencies }} dependencies
+        (weighted exposure {{ summary.exposure|round(1) }}); {{ summary.fixed }} recently fixed.
+      </p>
+      <p class="p-text--small u-text--muted">
+        Vulnerability data for the OCI image, Go modules, Go runtime and Python packages comes from
+        <a href="https://osv.dev">OSV.dev</a>. Interface and charm library advisories are illustrative.
+        {% if report.newer_workload %}
+        A newer Grafana {{ report.newer_workload.version }} rock is available upstream.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+  <div class="col-12" id="security-table">
+    {# Server-rendered fallback, replaced by the React table on load. #}
+    <table>
+      <thead>
+        <tr><th>Vulnerability</th><th>Severity</th><th>Dependency</th><th>Maintenance status</th></tr>
+      </thead>
+      <tbody>
+        {% for vuln in report.vulnerabilities %}
+        <tr>
+          <td>{{ vuln.id }}{% if vuln.cve %} ({{ vuln.cve }}){% endif %}</td>
+          <td>{{ vuln.severity }}</td>
+          <td>{{ vuln.dependency }}</td>
+          <td>{{ vuln.status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  </div>
+
+  <div class="p-section--shallow row">
+    <div class="col-12">
+    <h3 class="p-heading--5">Maintenance status</h3>
+    <table aria-label="Maintenance statuses">
+      <thead>
+        <tr><th>Status</th><th>Description</th><th class="u-align--right">Vulnerabilities</th></tr>
+      </thead>
+      <tbody>
+        {% for status in summary.statuses %}
+        <tr>
+          <td><span class="p-security-status is-{{ status.key }}">{{ status.label }}</span></td>
+          <td>{{ status.description }}</td>
+          <td class="u-align--right">{{ status.count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block details_scripts %}
+  <script type="application/json" id="security-report-data">{{ report|tojson }}</script>
+  {{ vite_import('static/js/src/public/details/security/security.tsx') }}
+{% endblock %}

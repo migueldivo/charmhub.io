@@ -23,7 +23,7 @@ from webapp.decorators import (
     store_maintenance,
 )
 from webapp.helpers import discourse_api, markdown_to_html, sanitize_html
-from webapp.store import logic
+from webapp.store import logic, security
 from webapp.config import SEARCH_FIELDS
 from webapp.observability.utils import trace_function
 from webapp.store_api import device_gateway, device_gateway_sbom
@@ -549,6 +549,53 @@ def details_actions(entity_name):
         package=package,
         channel_requested=channel_request,
     )
+
+
+def _render_security_tab(entity_name, template):
+    channel_request = request.args.get("channel", default=None, type=str)
+    report = security.get_security_report(entity_name)
+    if not report:
+        abort(404)
+    package = get_package(entity_name, channel_request, FIELDS)
+    return render_template(
+        template,
+        package=package,
+        channel_requested=channel_request,
+        report=report,
+        summary=security.summarise_report(report),
+        dependency_types=security.DEPENDENCY_TYPES,
+        statuses=security.MAINTENANCE_STATUSES,
+        index_bands=security.VULNERABILITY_INDEX,
+    )
+
+
+@trace_function
+@store.route('/<regex("' + DETAILS_VIEW_REGEX + '"):entity_name>/dependencies')
+@store_maintenance
+@redirect_uppercase_to_lowercase
+def details_dependencies(entity_name):
+    return _render_security_tab(entity_name, "details/dependencies.html")
+
+
+@trace_function
+@store.route('/<regex("' + DETAILS_VIEW_REGEX + '"):entity_name>/security')
+@store_maintenance
+@redirect_uppercase_to_lowercase
+def details_security(entity_name):
+    return _render_security_tab(entity_name, "details/security.html")
+
+
+@trace_function
+@store.route(
+    '/<regex("' + DETAILS_VIEW_REGEX + '"):entity_name>/security.json'
+)
+@store_maintenance
+@redirect_uppercase_to_lowercase
+def details_security_data(entity_name):
+    report = security.get_security_report(entity_name)
+    if not report:
+        abort(404)
+    return jsonify(report)
 
 
 @trace_function

@@ -1,0 +1,57 @@
+{% set current_tab = "dependencies" %}
+
+{% extends '/details/details_layout.html' %}
+
+{% block details_content %}
+<div class="p-section--shallow p-details-tab__content">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="p-heading--4">Dependencies</h2>
+      <p>
+        Everything {{ package.store_front["display-name"] }} revision {{ report.revision }}
+        ({{ report.channel }}, {{ report.base }}) depends on: the OCI resource and the software
+        inside it, the interfaces it integrates through, the charm libraries it vendors and the
+        Python packages it installs. Snapshot from {{ report.generated_at }}.
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <ul class="p-inline-list--middot">
+        {% for type in summary.dependency_types %}
+        <li class="p-inline-list__item">
+          {{ type.plural if type.count != 1 else type.label }}: <strong>{{ type.count }}</strong>
+          {% if type.vulnerable %}(<a href="/{{ package.name }}/security?type={{ type.key }}">{{ type.vulnerable }} vulnerable</a>){% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="row">
+  <div class="col-12" id="dependencies-table">
+    {# Server-rendered fallback, replaced by the React table on load. #}
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Version</th></tr>
+      </thead>
+      <tbody>
+        {% for dep in report.dependencies if dep.relationship == "direct" %}
+        <tr>
+          <td>{{ dep.name }}</td>
+          <td>{{ dependency_types[dep.type] }}</td>
+          <td>{{ dep.version or "" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block details_scripts %}
+  <script type="application/json" id="security-report-data">{{ report|tojson }}</script>
+  {{ vite_import('static/js/src/public/details/security/dependencies.tsx') }}
+{% endblock %}

@@ -1,3 +1,5 @@
+{# Charms with a security report show a reduced set of tabs. #}
+{% set security_tabs = package.type == "charm" and has_security_report(package.name) %}
 <div class="grid-row">
   <div class="grid-col-2 grid-col-medium-1 grid-col-small-1"></div>
   <div class="grid-col-6">
@@ -13,6 +15,16 @@
       <li class="p-tabs__item" role="presentation">
         <a href="/{{ package.name }}/integrations{% if channel_requested %}?channel={{ channel_requested }}{% endif %}" class="p-tabs__link" tabindex="0" role="tab" {% if current_tab == 'integrations' %}aria-selected="true" {% endif %}>Integrations</a>
       </li>
+      {% endif %}
+      {% if security_tabs %}
+      <li class="p-tabs__item" role="presentation">
+        <a href="/{{ package.name }}/dependencies{% if channel_requested %}?channel={{ channel_requested }}{% endif %}" class="p-tabs__link" tabindex="0" role="tab" {% if current_tab == 'dependencies' %}aria-selected="true" {% endif %}>Dependencies</a>
+      </li>
+      <li class="p-tabs__item" role="presentation">
+        <a href="/{{ package.name }}/security{% if channel_requested %}?channel={{ channel_requested }}{% endif %}" class="p-tabs__link" tabindex="0" role="tab" {% if current_tab == 'security' %}aria-selected="true" {% endif %}>Security</a>
+      </li>
+      {% else %}
+      {% if package.type == "charm" %}
       <li class="p-tabs__item" role="presentation">
         <a href="/{{ package.name }}/libraries{% if channel_requested %}?channel={{ channel_requested }}{% endif %}" class="p-tabs__link" tabindex="0" role="tab" {% if current_tab == 'libraries' %}aria-selected="true" {% endif %}>Libraries</a>
       </li>
@@ -25,8 +37,8 @@
         <a href="/{{ package.name }}/actions{% if channel_requested %}?channel={{ channel_requested }}{% endif %}" class="p-tabs__link" tabindex="0" role="tab" {% if current_tab == 'actions' %}aria-selected="true" {% endif %}>Actions</a>
       </li>
       {% endif %}
+      {% endif %}
       </ul>
     </nav>
   </div>
 </div>
-

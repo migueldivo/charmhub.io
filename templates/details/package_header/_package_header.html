@@ -32,7 +32,8 @@ Context variables needed for `package_header`:
           publisher_name=package.store_front.publisher_name,
           username=package.store_front.username,
           developer_validation=developer_validation,
-          package_type=package.type
+          package_type=package.type,
+          has_security_seal=security_certification(package.name) is not none
       ) }}
     </div>
     {%- if has_aside_content -%}
